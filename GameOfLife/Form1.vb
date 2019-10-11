@@ -1,36 +1,19 @@
-﻿Public Class GameOfLife
+﻿Imports System.Threading
+
+Public Class GameOfLife
 
     Dim iSize As Integer = 30
     Dim aInitialPositions(iSize, iSize) As Integer
     Dim aFinalPositions(iSize, iSize) As Integer
 
+   
     Private Sub GameOfLife_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
 
+        'Reset the two arrays
         resetArrays()
-
-        'initial positions
-        Randomize()
-        For i = 0 To 200
-            aInitialPositions((Int(iSize - 1) * Rnd()), (Int(iSize - 1) * Rnd())) = 1
-        Next
-
-        'aInitialPositions(1, 2) = 1
-        'aInitialPositions(2, 1) = 1
-        'aInitialPositions(2, 2) = 1
-        'aInitialPositions(3, 2) = 1
-
-        'aInitialPositions(5, 2) = 1
-        'aInitialPositions(5, 3) = 1
-        'aInitialPositions(5, 4) = 1
-        'aInitialPositions(5, 5) = 1
 
         'create PictureBoxes dynamically  
         createPictureBoxes()
-
-        'Set and start a Timer
-        Timer1.Interval = 100
-        Timer1.Enabled = True
-        Timer1.Start()
 
     End Sub
 
@@ -79,7 +62,7 @@
                 Dim obj As New System.Windows.Forms.PictureBox
 
                 With obj
-                    .Name = "PB" & i & j 'nom de ta picturebox (PB1, PB2, PB3, ...)
+                    .Name = "PB" & i & "_" & j 'nom de ta picturebox (PB1, PB2, PB3, ...)
                     .Left = (j - ((j \ iSize) * iSize)) * 15 + 10 ' 'position par rapport au rebord gauche de l'UserForm
                     .Top = (i) * 15 + 10   'position par rapport au haut de l'UserForm
                     .Width = 10 'largeur de la zone d'écriture
@@ -97,21 +80,27 @@
 
                 'ajout du controle à la PictureBox1
                 Me.Controls.Add(obj)
+
+                'only for debug purpose
+                'AddHandler obj.MouseClick, AddressOf obj_MouseClick
+
             Next
         Next
     End Sub
 
-    Private Sub updateDisplay()
+    'only for debug purpose
+    Private Sub obj_MouseClick(ByVal sender As System.Object, ByVal e As System.Windows.Forms.MouseEventArgs) Handles Me.Click
+        'sender.Name()
+    End Sub
 
-        Dim i As Integer = 0
-        Dim j As Integer = 0
+    Private Sub updateDisplay()
 
         For i = 0 To iSize - 1
             For j = 0 To iSize - 1
                 If aInitialPositions(i, j) = 1 Then
-                    CType(Me.Controls("PB" & i & j), PictureBox).BackColor = Color.Blue
+                    CType(Me.Controls("PB" & i & "_" & j), PictureBox).BackColor = Color.Blue
                 Else
-                    CType(Me.Controls("PB" & i & j), PictureBox).BackColor = Color.Black
+                    CType(Me.Controls("PB" & i & "_" & j), PictureBox).BackColor = Color.Black
                 End If
             Next
         Next
@@ -181,5 +170,96 @@
 
     End Function
 
+    'The random initialisation
+    Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
 
+        'initial positions (first solution)
+        'Randomize()
+        'For i = 0 To 200
+        '    aInitialPositions((Int(iSize - 1) * Rnd()), (Int(iSize - 1) * Rnd())) = 1
+        'Next
+
+        'initial positions (second solution)
+        Randomize()
+
+        For iCpt = 0 To iSize - 1
+            For jCpt = 0 To iSize - 1
+                If Int(100 * Rnd() < 20) Then
+                    aInitialPositions(iCpt, jCpt) = 1
+                Else
+                    aInitialPositions(iCpt, jCpt) = 0
+                End If
+            Next
+        Next
+
+        'Set and start a Timer
+        Timer1.Interval = 100
+        Timer1.Enabled = True
+        Timer1.Start()
+
+    End Sub
+
+    'Test (Step by step)
+    Private Sub Button3_Click(sender As Object, e As EventArgs) Handles Button3.Click
+
+        For i = 0 To iSize - 1
+            For j = 0 To iSize - 1
+                algoGameOfLife(i, j)
+            Next
+        Next
+
+        copyFinalArrayIntoInitialArray()
+        updateDisplay()
+
+    End Sub
+
+    'The cross initialisation
+    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
+
+       
+        SetCrossConfiguration()
+
+        'Set and start a Timer
+        Timer1.Interval = 100
+        Timer1.Enabled = True
+        Timer1.Start()
+
+    End Sub
+
+    'Set test configuration
+    Private Sub Button4_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Button4.Click
+        Timer1.Enabled = False
+        'Reset the two arrays
+        resetArrays()
+        aInitialPositions(1, 2) = 1
+        aInitialPositions(2, 1) = 1
+        aInitialPositions(2, 2) = 1
+        aInitialPositions(3, 2) = 1
+        updateDisplay()
+    End Sub
+
+    Private Sub Button5_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Button5.Click
+        SetCrossConfiguration()
+        updateDisplay()
+    End Sub
+
+
+    Private Sub SetCrossConfiguration()
+
+        Timer1.Enabled = False
+        'Reset the two arrays
+        resetArrays()
+
+        For iCpt = 0 To iSize - 1
+            For jCpt = 0 To iSize - 1
+                aInitialPositions(iCpt, jCpt) = 0
+                If iCpt = jCpt Then
+                    aInitialPositions(iCpt, jCpt) = 1
+                End If
+                If iCpt + jCpt = iSize - 1 Then
+                    aInitialPositions(iCpt, jCpt) = 1
+                End If
+            Next
+        Next
+    End Sub
 End Class
